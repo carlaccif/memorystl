@@ -3,28 +3,59 @@
 FREE freeList;
 ALLOC allocList;
 
-const int TIME_LIMIT = 1000;
-const int REQUEST = 20;
+const int TIME_LIMIT = 100;
+const int REQUEST = 10;
+const int MIN_LEASE = 10;
+const int MAX_LEASE = 20;
+const int MIN_ALLOC = 100;
+const int MAX_ALLOC = 200;
+
 int main() {
+
   srand(0);
+  
+  FREE tmp;
   freeNode p = {{0,1000}};
   freeList.push(p);
+  
   for ( int time = 0 ; time  < TIME_LIMIT ; time++) {
   //
   // check if it's time to generate an allocation request
   //
   //		 cout << "Time -> " << time << endl;
          if ( 0 == time  % REQUEST) {
-            int size = rand() % 100;
-            int lease = rand() % 10;
-            cout << "     " << size  << " " << lease << "  " << time + lease << endl;
-            if (freeList.top().hole.size > size ) {
-                          freeNode p = {{freeList.top().hole.start+size, freeList.top().hole.size-size}};
-                          allocNode q = {{freeList.top().hole.start,size},time + lease};
-                          freeList.pop();
-                          freeList.push(p);
-                          allocList.push(q);
-                          cout << "request granted\n";
+         
+            int size = MIN_ALLOC + rand() % MAX_ALLOC;
+            int lease = MIN_LEASE + rand() % MAX_LEASE;
+            
+            cout << "Time -> " << time <<  "     " << size  << " " << lease << "  " << time + lease << endl;
+  //
+  //  search freeList for a right-sized hole move non-candidates to a tmp queue
+  //          
+            while (!freeList.empty() && freeList.top().hole.size < size ) {
+                 tmp.push(freeList.top());
+                 freeList.pop();
+            }
+            
+            if (freeList.empty() ) {
+                cout << "request denied\n";
+                freeList = tmp;
+             } 
+             else
+             {
+			  freeNode p = {{freeList.top().hole.start+size, freeList.top().hole.size-size}};
+			  allocNode q = {{freeList.top().hole.start,size},time + lease};
+			  freeList.pop();
+			  freeList.push(p);
+			  allocList.push(q);
+			  cout << "request granted\n";
+	//
+	// some elements in tmp queue must be re-inserted into freeList
+	//
+			  while (!tmp.empty()) {
+			        freeList.push(tmp.top());
+			        tmp.pop();
+			  }
             }
          }
    //

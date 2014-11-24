@@ -10,11 +10,13 @@ const int MAX_LEASE = 20;
 const int MIN_ALLOC = 100;
 const int MAX_ALLOC = 200;
 
+
+
 int main() {
 
   srand(0);
   
-  FREE tmp;
+
   freeNode p = {{0,1000}};
   freeList.push(p);
   
@@ -22,7 +24,9 @@ int main() {
   //
   // check if it's time to generate an allocation request
   //
-  //		 cout << "Time -> " << time << endl;
+  //		   
+         FREE tmp;
+          
          if ( 0 == time  % REQUEST) {
          
             int size = MIN_ALLOC + rand() % MAX_ALLOC;
@@ -38,9 +42,40 @@ int main() {
             }
             
             if (freeList.empty() ) {
-                cout << "request denied\n";
-                freeList = tmp;
+                cout << "request denied - first time\n";
+	//
+	// merge holes and re-try; since all holes are now in tmp we will merge and re-insert back into freeList
+	//
+				while (!tmp.empty()) {
+				   freeNode p = tmp.top();
+				   tmp.pop();
+				   if ( p.hole.start + p.hole.size == tmp.top().hole.start) {
+//
+//  have two adjacent holes
+//				 
+			             p.hole.size += tmp.top().hole.size;
+	     	             tmp.pop();
+				         tmp.push(p);
+				     }
+				    else
+				     {
+				     	freeList.push(p);
+				     }
+				}
              } 
+    //
+    // now try and see if we can grant request with merged free list
+    //
+            while (!freeList.empty() && freeList.top().hole.size < size ) {
+                 tmp.push(freeList.top());
+                 freeList.pop();
+            }
+            
+                     
+             if (freeList.empty() ) {
+                cout << "request denied - second  time\n";   
+                freeList = tmp;
+             }            
              else
              {
 			  freeNode p = {{freeList.top().hole.start+size, freeList.top().hole.size-size}};

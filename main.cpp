@@ -10,8 +10,6 @@ const int MAX_LEASE = 20;
 const int MIN_ALLOC = 100;
 const int MAX_ALLOC = 200;
 
-
-
 int main() {
 
   srand(0);
@@ -56,11 +54,11 @@ int main() {
 			             p.hole.size += tmp.top().hole.size;
 	     	             tmp.pop();
 				         tmp.push(p);
-				     }
+				    }
 				    else
-				     {
+				    {
 				     	freeList.push(p);
-				     }
+				    }
 				}
              } 
     //
@@ -72,7 +70,7 @@ int main() {
             }
             
                      
-             if (freeList.empty() ) {
+            if (freeList.empty() ) {
                 cout << "request denied - second  time\n";   
                 freeList = tmp;
              }            
@@ -91,7 +89,7 @@ int main() {
 			        freeList.push(tmp.top());
 			        tmp.pop();
 			  }
-            }
+             }
          }
    //
    //  check to see if a lease has expired
